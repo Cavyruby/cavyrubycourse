@@ -1,0 +1,619 @@
+'use client'
+
+import React, { useState, useEffect, useRef } from 'react'
+import { Button } from "/components/ui/button"
+import { Card, CardContent } from "/components/ui/card"
+import { Upload, Star, Sparkles } from 'lucide-react'
+
+export default function CavyrubyMagicalWebsite() {
+  const [currentSection, setCurrentSection] = useState('opening')
+  const [isOpening, setIsOpening] = useState(false)
+  const [promoSlide, setPromoSlide] = useState(0)
+  const [activitySlide, setActivitySlide] = useState(0)
+  const [testimoniSlide, setTestimoniSlide] = useState(0)
+  const [isAdmin] = useState(true) // Set to true for demo purposes
+  
+  const [uploadedImages, setUploadedImages] = useState({
+    student: null,
+    promo: [null, null, null],
+    activities: [null, null, null, null, null],
+    certificate: null,
+    testimonials: Array(20).fill(null),
+    logo: null
+  })
+
+  const canvasRef = useRef(null)
+
+  // Magical particle animation
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
+    const particles = []
+    const particleCount = 50
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 3 + 1,
+        speedX: (Math.random() - 0.5) * 0.5,
+        speedY: (Math.random() - 0.5) * 0.5,
+        opacity: Math.random() * 0.5 + 0.2
+      })
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      
+      particles.forEach(particle => {
+        particle.x += particle.speedX
+        particle.y += particle.speedY
+        
+        if (particle.x < 0 || particle.x > canvas.width) particle.speedX *= -1
+        if (particle.y < 0 || particle.y > canvas.height) particle.speedY *= -1
+        
+        ctx.fillStyle = `rgba(212, 175, 55, ${particle.opacity})`
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+        ctx.fill()
+      })
+      
+      requestAnimationFrame(animate)
+    }
+    
+    animate()
+
+    const handleResize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const handleImageUpload = (section, index = null) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = (e) => {
+      const file = e.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setUploadedImages(prev => {
+            const newImages = { ...prev }
+            if (index !== null && Array.isArray(newImages[section])) {
+              newImages[section][index] = e.target.result
+            } else {
+              newImages[section] = e.target.result
+            }
+            return newImages
+          })
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+    input.click()
+  }
+
+  const startOpening = () => {
+    setIsOpening(true)
+    setTimeout(() => {
+      setCurrentSection('welcome')
+    }, 4000)
+  }
+
+  const goToSection = (section) => {
+    setCurrentSection(section)
+  }
+
+  const closeWebsite = () => {
+    setCurrentSection('closing')
+    setTimeout(() => {
+      setCurrentSection('opening')
+      setIsOpening(false)
+    }, 3000)
+  }
+
+  const nextSlide = (slideType, maxSlides) => {
+    if (slideType === 'promo') {
+      setPromoSlide(prev => (prev + 1) % maxSlides)
+    } else if (slideType === 'activity') {
+      setActivitySlide(prev => (prev + 1) % maxSlides)
+    } else if (slideType === 'testimoni') {
+      setTestimoniSlide(prev => (prev + 1) % maxSlides)
+    }
+  }
+
+  const prevSlide = (slideType, maxSlides) => {
+    if (slideType === 'promo') {
+      setPromoSlide(prev => (prev - 1 + maxSlides) % maxSlides)
+    } else if (slideType === 'activity') {
+      setActivitySlide(prev => (prev - 1 + maxSlides) % maxSlides)
+    } else if (slideType === 'testimoni') {
+      setTestimoniSlide(prev => (prev - 1 + maxSlides) % maxSlides)
+    }
+  }
+
+  return (
+    <div className="min-h-screen relative overflow-hidden" style={{ 
+      background: 'linear-gradient(135deg, #FDF6E3 0%, #F5E6D3 100%)',
+      fontFamily: 'serif'
+    }}>
+      {/* Magical particles canvas */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 pointer-events-none z-10"
+        style={{ mixBlendMode: 'screen' }}
+      />
+
+      {/* Parchment texture overlay */}
+      <div 
+        className="fixed inset-0 opacity-10 z-0"
+        style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, #8B4513 1px, transparent 1px),
+                           radial-gradient(circle at 75% 75%, #8B4513 1px, transparent 1px)`,
+          backgroundSize: '50px 50px'
+        }}
+      />
+
+      {/* Opening Animation */}
+      {currentSection === 'opening' && (
+        <div className="flex items-center justify-center min-h-screen relative z-20">
+          <div className="text-center">
+            {!isOpening ? (
+              <div className="animate-pulse">
+                <div className="relative mx-auto w-80 h-56 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-500 cursor-pointer border-4 border-amber-300">
+                  <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-purple-800 to-purple-600 rounded-full shadow-lg">
+                    <div className="absolute inset-2 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                      <Star className="w-4 h-4 text-purple-900" />
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h2 className="text-2xl font-bold text-purple-900 mb-4">Magical Letter</h2>
+                    <p className="text-purple-800 text-sm">Click to receive your magical invitation</p>
+                  </div>
+                  <Button 
+                    onClick={startOpening}
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-purple-800 hover:bg-purple-700 text-white px-6 py-2 rounded-full shadow-lg"
+                  >
+                    Open Envelope
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="animate-bounce">
+                <div className="text-6xl mb-8 animate-pulse">🦉</div>
+                <div className="text-4xl font-bold text-purple-900 mb-4 animate-fade-in">
+                  Welcome to Cavyruby Course
+                </div>
+                <div className="text-2xl text-yellow-600 animate-shimmer">
+                  ✨ Your magical journey begins... ✨
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      {currentSection !== 'opening' && currentSection !== 'closing' && (
+        <div className="relative z-20">
+          {/* Navigation */}
+          <nav className="fixed top-0 left-0 right-0 bg-purple-900/20 backdrop-blur-md z-30 border-b border-yellow-400/20">
+            <div className="max-w-6xl mx-auto px-6 py-4">
+              <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold text-purple-900">Cavyruby Course</h1>
+                <div className="flex space-x-4">
+                  {['welcome', 'promo', 'activities', 'certificate', 'testimonials'].map((section) => (
+                    <Button
+                      key={section}
+                      onClick={() => goToSection(section)}
+                      variant={currentSection === section ? "default" : "ghost"}
+                      className={currentSection === section ? "bg-purple-800 text-white" : "text-purple-800 hover:bg-purple-100"}
+                    >
+                      {section.charAt(0).toUpperCase() + section.slice(1)}
+                    </Button>
+                  ))}
+                  <Button onClick={closeWebsite} variant="outline" className="border-yellow-400 text-yellow-600 hover:bg-yellow-50">
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <div className="pt-20 px-6">
+            {/* Welcome Section */}
+            {currentSection === 'welcome' && (
+              <div className="max-w-4xl mx-auto text-center py-16">
+                <div className="mb-8">
+                  <h1 className="text-6xl font-bold text-purple-900 mb-4 animate-fade-in">
+                    Selamat Datang di Cavyruby Course
+                  </h1>
+                  <p className="text-2xl text-yellow-600 font-semibold animate-slide-up">
+                    New Gen, New Way to Learn
+                  </p>
+                </div>
+                
+                {/* Student Photo Upload Area */}
+                {isAdmin && (
+                  <div className="mb-12">
+                    <div 
+                      className="mx-auto w-64 h-80 border-4 border-dashed border-yellow-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50/30 transition-colors"
+                      onClick={() => handleImageUpload('student')}
+                    >
+                      {uploadedImages.student ? (
+                        <img 
+                          src={uploadedImages.student} 
+                          alt="Student or class photo showing learning environment" 
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <>
+                          <Upload className="w-12 h-12 text-yellow-500 mb-4" />
+                          <p className="text-yellow-600 text-center px-4">Upload Student/Class Photo (Portrait)</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid md:grid-cols-3 gap-8">
+                  <Card className="bg-white/80 backdrop-blur-sm border-yellow-400 shadow-xl hover:shadow-2xl transition-shadow">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-4xl mb-4">🎓</div>
+                      <h3 className="text-xl font-bold text-purple-900 mb-2">Modern Learning</h3>
+                      <p className="text-gray-700">Metode pembelajaran terkini dengan teknologi canggih</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-white/80 backdrop-blur-sm border-yellow-400 shadow-xl hover:shadow-2xl transition-shadow">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-4xl mb-4">⭐</div>
+                      <h3 className="text-xl font-bold text-purple-900 mb-2">Quality Education</h3>
+                      <p className="text-gray-700">Kualitas pendidikan terbaik dengan instruktur berpengalaman</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-white/80 backdrop-blur-sm border-yellow-400 shadow-xl hover:shadow-2xl transition-shadow">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-4xl mb-4">🚀</div>
+                      <h3 className="text-xl font-bold text-purple-900 mb-2">Future Ready</h3>
+                      <p className="text-gray-700">Persiapan untuk masa depan yang cerah dan sukses</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Promo Section */}
+            {currentSection === 'promo' && (
+              <div className="max-w-4xl mx-auto py-16">
+                <h2 className="text-4xl font-bold text-purple-900 text-center mb-12">Course Promotions</h2>
+                
+                <div className="relative">
+                  <div className="flex overflow-hidden">
+                    <div 
+                      className="flex transition-transform duration-500 ease-in-out"
+                      style={{ transform: `translateX(-${promoSlide * 100}%)` }}
+                    >
+                      {[0, 1, 2].map((index) => (
+                        <div key={index} className="min-w-full px-4">
+                          <Card className="bg-white/90 backdrop-blur-sm border-yellow-400 shadow-2xl">
+                            <CardContent className="p-8">
+                              <div className="text-center">
+                                <div 
+                                  className="mx-auto w-64 h-80 border-4 border-dashed border-yellow-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50/30 transition-colors mb-6"
+                                  onClick={() => isAdmin && handleImageUpload('promo', index)}
+                                >
+                                  {uploadedImages.promo[index] ? (
+                                    <img 
+                                      src={uploadedImages.promo[index]} 
+                                      alt={`Promotional banner for course offering ${index + 1} showing special pricing and features`}
+                                      className="w-full h-full object-cover rounded-lg"
+                                    />
+                                  ) : (
+                                    <>
+                                      <Upload className="w-12 h-12 text-yellow-500 mb-4" />
+                                      <p className="text-yellow-600 text-center px-4">Upload Promo {index + 1} (Portrait)</p>
+                                    </>
+                                  )}
+                                </div>
+                                <h3 className="text-2xl font-bold text-purple-900 mb-4">Special Offer {index + 1}</h3>
+                                <p className="text-gray-700">Amazing deals and packages for your learning journey</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={() => prevSlide('promo', 3)}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-purple-800 hover:bg-purple-700 text-white rounded-full w-12 h-12"
+                  >
+                    ←
+                  </Button>
+                  <Button
+                    onClick={() => nextSlide('promo', 3)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-purple-800 hover:bg-purple-700 text-white rounded-full w-12 h-12"
+                  >
+                    →
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Activities Section */}
+            {currentSection === 'activities' && (
+              <div className="max-w-4xl mx-auto py-16">
+                <h2 className="text-4xl font-bold text-purple-900 text-center mb-4">Kita bakal ngapain aja sih selama kursus?</h2>
+                <p className="text-xl text-center text-gray-700 mb-12">Discover the exciting activities waiting for you</p>
+                
+                <div className="relative">
+                  <div className="flex justify-center">
+                    <div className="relative w-80 h-96">
+                      {[0, 1, 2, 3, 4].map((index) => (
+                        <Card
+                          key={index}
+                          className={`absolute w-full h-full bg-white/90 backdrop-blur-sm border-yellow-400 shadow-2xl transition-all duration-500 cursor-pointer ${
+                            index === activitySlide 
+                              ? 'z-20 transform scale-105' 
+                              : `z-${10 - index} transform scale-95 translate-y-${index * 2}`
+                          }`}
+                          onClick={() => nextSlide('activity', 5)}
+                        >
+                          <CardContent className="p-6 h-full flex flex-col">
+                            <div 
+                              className="flex-1 border-4 border-dashed border-yellow-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50/30 transition-colors mb-4"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (isAdmin) handleImageUpload('activities', index)
+                              }}
+                            >
+                              {uploadedImages.activities[index] ? (
+                                <img 
+                                  src={uploadedImages.activities[index]} 
+                                  alt={`Course activity ${index + 1} showing students engaged in interactive learning session`}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <>
+                                  <Upload className="w-8 h-8 text-yellow-500 mb-2" />
+                                  <p className="text-yellow-600 text-center text-sm px-2">Activity {index + 1}</p>
+                                </>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold text-purple-900 text-center">Activity {index + 1}</h3>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="text-center mt-8">
+                    <p className="text-gray-600">Swipe or click cards to explore activities</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Certificate Section */}
+            {currentSection === 'certificate' && (
+              <div className="max-w-4xl mx-auto py-16 text-center">
+                <h2 className="text-4xl font-bold text-purple-900 mb-8">Certificate of Completion</h2>
+                <p className="text-xl text-gray-700 mb-12">Dapat Sertifikat Yang Bisa Dicantumkan di LinkedIn Juga Loh</p>
+                
+                <Card className="bg-white/90 backdrop-blur-sm border-yellow-400 shadow-2xl max-w-2xl mx-auto">
+                  <CardContent className="p-8">
+                    <div 
+                      className="mx-auto w-80 h-96 border-4 border-dashed border-yellow-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50/30 transition-colors mb-6"
+                      onClick={() => isAdmin && handleImageUpload('certificate')}
+                    >
+                      {uploadedImages.certificate ? (
+                        <img 
+                          src={uploadedImages.certificate} 
+                          alt="Official certificate of completion with golden seal and elegant border design suitable for LinkedIn"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <>
+                          <div className="text-6xl mb-4">🏆</div>
+                          <Upload className="w-12 h-12 text-yellow-500 mb-4" />
+                          <p className="text-yellow-600 text-center px-4">Upload Certificate (Portrait)</p>
+                        </>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center space-x-2">
+                        <Sparkles className="w-5 h-5 text-yellow-500" />
+                        <span className="text-purple-900 font-semibold">Officially Recognized</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Sparkles className="w-5 h-5 text-yellow-500" />
+                        <span className="text-purple-900 font-semibold">LinkedIn Ready</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Sparkles className="w-5 h-5 text-yellow-500" />
+                        <span className="text-purple-900 font-semibold">Industry Validated</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Testimonials Section */}
+            {currentSection === 'testimonials' && (
+              <div className="max-w-4xl mx-auto py-16">
+                <h2 className="text-4xl font-bold text-purple-900 text-center mb-12">Student Testimonials</h2>
+                
+                <div className="relative">
+                  <div className="flex justify-center">
+                    <div className="relative w-80 h-96">
+                      {uploadedImages.testimonials.slice(0, 5).map((testimonial, index) => (
+                        <Card
+                          key={index}
+                          className={`absolute w-full h-full bg-white/90 backdrop-blur-sm border-yellow-400 shadow-2xl transition-all duration-500 cursor-pointer ${
+                            index === testimoniSlide 
+                              ? 'z-20 transform scale-105' 
+                              : `z-${10 - index} transform scale-95 translate-y-${index * 2} rotate-${index * 2}`
+                          }`}
+                          onClick={() => nextSlide('testimoni', Math.min(5, uploadedImages.testimonials.filter(t => t).length || 1))}
+                        >
+                          <CardContent className="p-6 h-full flex flex-col">
+                            <div 
+                              className="flex-1 border-4 border-dashed border-yellow-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-yellow-50/30 transition-colors mb-4"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (isAdmin) handleImageUpload('testimonials', index)
+                              }}
+                            >
+                              {testimonial ? (
+                                <img 
+                                  src={testimonial} 
+                                  alt={`Student testimonial ${index + 1} showing positive feedback and success story from course graduate`}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                              ) : (
+                                <>
+                                  <Upload className="w-8 h-8 text-yellow-500 mb-2" />
+                                  <p className="text-yellow-600 text-center text-sm px-2">Testimonial {index + 1}</p>
+                                </>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold text-purple-900 text-center">Student Review {index + 1}</h3>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {isAdmin && (
+                    <div className="mt-8 text-center">
+                      <p className="text-gray-600 mb-4">Upload up to 20 testimonials</p>
+                      <div className="grid grid-cols-5 gap-2 max-w-sm mx-auto">
+                        {uploadedImages.testimonials.slice(0, 20).map((testimonial, index) => (
+                          <div
+                            key={index}
+                            className="w-12 h-12 border-2 border-dashed border-yellow-400 rounded cursor-pointer flex items-center justify-center hover:border-yellow-500 transition-colors"
+                            onClick={() => handleImageUpload('testimonials', index)}
+                          >
+                            {testimonial ? (
+                              <img 
+                                src={testimonial} 
+                                alt={`Testimonial thumbnail ${index + 1} preview of student feedback`}
+                                className="w-full h-full object-cover rounded"
+                              />
+                            ) : (
+                              <span className="text-yellow-500 text-xs">{index + 1}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Closing Animation */}
+      {currentSection === 'closing' && (
+        <div className="flex items-center justify-center min-h-screen relative z-20">
+          <div className="text-center">
+            <div className="animate-pulse mb-8">
+              <div className="relative mx-auto w-80 h-56 bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg shadow-2xl transform -rotate-2 border-4 border-amber-300">
+                <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-purple-800 to-purple-600 rounded-full shadow-lg">
+                  <div className="absolute inset-2 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center">
+                    <Star className="w-4 h-4 text-purple-900" />
+                  </div>
+                </div>
+                
+                {/* Logo upload area */}
+                <div className="p-6 h-full flex flex-col justify-center">
+                  {isAdmin && (
+                    <div 
+                      className="mx-auto w-32 h-32 border-4 border-dashed border-purple-400 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-purple-50/30 transition-colors mb-4"
+                      onClick={() => handleImageUpload('logo')}
+                    >
+                      {uploadedImages.logo ? (
+                        <img 
+                          src={uploadedImages.logo} 
+                          alt="Cavyruby Course logo or emblem displayed prominently on magical envelope"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <>
+                          <Upload className="w-6 h-6 text-purple-500 mb-2" />
+                          <p className="text-purple-600 text-center text-xs px-2">Logo</p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-4xl font-bold text-purple-900 mb-4 animate-fade-in">
+              Sampai Jumpa Lagi ✨
+            </div>
+            <Button 
+              onClick={() => {
+                setCurrentSection('opening')
+                setIsOpening(false)
+              }}
+              className="bg-purple-800 hover:bg-purple-700 text-white px-8 py-3 rounded-full shadow-lg text-lg animate-bounce"
+            >
+              Return to Beginning
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 1s ease-out;
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 1s ease-out 0.5s both;
+        }
+        
+        .animate-shimmer {
+          background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite;
+          -webkit-background-clip: text;
+          background-clip: text;
+        }
+      `}</style>
+    </div>
+  )
+}
